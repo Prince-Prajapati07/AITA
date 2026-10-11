@@ -104,6 +104,30 @@ class AdapterTests(unittest.TestCase):
         self.assertTrue(fields[0]["required"])
         self.assertFalse(fields[1]["required"])
 
+    def test_calendar_agent_new_schema_unchanged_adapter(self):
+        schema = {
+            "type": "object",
+            "properties": {
+                "event_title": {"type": "string"},
+                "start_time": {"type": "string"},
+                "attendees": {"type": "array"},
+            },
+            "required": ["event_title", "start_time", "attendees"],
+        }
+        result = adapt(
+            'Create an event called "Project review" tomorrow at 3 PM with '
+            "rahul@awd.example.com and anita@awd.example.com.",
+            schema,
+            reference_date="2026-10-10",
+            timezone="Asia/Kolkata",
+        )
+        self.assertEqual("ok", result["status"])
+        self.assertEqual("Project review", result["payload"]["event_title"])
+        self.assertEqual("2026-10-11T15:00:00[Asia/Kolkata]", result["payload"]["start_time"])
+        self.assertEqual(
+            ["rahul@awd.example.com", "anita@awd.example.com"],
+            result["payload"]["attendees"],
+        )
 
 if __name__ == "__main__":
     unittest.main()
